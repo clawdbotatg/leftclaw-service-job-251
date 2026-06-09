@@ -13,56 +13,57 @@
     dark --prefersdark;
 }
 
+/* Both themes forced to Neon Cyber Tokyo (near-black) so light === dark. */
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
-  --color-neutral-content: #ffffff;
-  --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
+  --color-primary: #00f5ff;
+  --color-primary-content: #0a0a0f;
+  --color-secondary: #ff006e;
+  --color-secondary-content: #0a0a0f;
+  --color-accent: #7c3aed;
+  --color-accent-content: #ffffff;
+  --color-neutral: #1a1a24;
+  --color-neutral-content: #e8e8ff;
+  --color-base-100: #0a0a0f;
+  --color-base-200: #12121a;
+  --color-base-300: #1a1a24;
+  --color-base-content: #e8e8ff;
+  --color-info: #00f5ff;
   --color-success: #34eeb6;
   --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-error: #ff006e;
 
-  --radius-field: 1rem;
-  --radius-box: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
   --tt-tailw: 6px;
 }
 
 @plugin "daisyui/theme" {
   name: "dark";
 
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
+  --color-primary: #00f5ff;
+  --color-primary-content: #0a0a0f;
+  --color-secondary: #ff006e;
+  --color-secondary-content: #0a0a0f;
+  --color-accent: #7c3aed;
+  --color-accent-content: #ffffff;
+  --color-neutral: #1a1a24;
+  --color-neutral-content: #e8e8ff;
+  --color-base-100: #0a0a0f;
+  --color-base-200: #12121a;
+  --color-base-300: #1a1a24;
+  --color-base-content: #e8e8ff;
+  --color-info: #00f5ff;
   --color-success: #34eeb6;
   --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-error: #ff006e;
 
-  --radius-field: 1rem;
-  --radius-box: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
 
   --tt-tailw: 6px;
-  --tt-bg: var(--color-primary);
+  --tt-bg: var(--color-base-300);
 }
 
 /*
@@ -101,12 +102,16 @@
 
 :root,
 [data-theme] {
-  background: var(--color-base-200);
+  background: var(--color-base-100);
+
+  --neon-cyan: #00f5ff;
+  --neon-pink: #ff006e;
+  --neon-purple: #7c3aed;
 }
 
 .btn {
   @apply shadow-md;
-  border-radius: 9999rem;
+  border-radius: 0.5rem;
 }
 
 .btn.btn-ghost {
@@ -119,4 +124,104 @@
 
 .link:hover {
   opacity: 80%;
+}
+
+/* ── Neon Cyber Tokyo animations ─────────────────────────── */
+@keyframes neon-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+@keyframes card-deal {
+  from {
+    transform: translateY(-40px) rotateY(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) rotateY(0);
+    opacity: 1;
+  }
+}
+@keyframes win-flash {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 30px #00f5ff;
+  }
+}
+@keyframes bust-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+@keyframes grid-move {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 60px;
+  }
+}
+@keyframes claw-pinch {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-15deg);
+  }
+}
+
+.neon-grid {
+  background-color: #0a0a0f;
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: grid-move 4s linear infinite;
+}
+
+.neon-text-cyan {
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px var(--neon-cyan),
+    0 0 20px rgba(0, 245, 255, 0.5);
+}
+.neon-text-pink {
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px var(--neon-pink);
+}
+.neon-border {
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  box-shadow:
+    0 0 12px rgba(0, 245, 255, 0.15),
+    inset 0 0 12px rgba(0, 245, 255, 0.05);
+}
+.anim-card-deal {
+  animation: card-deal 0.4s ease-out both;
+}
+.anim-claw-pinch {
+  animation: claw-pinch 0.6s ease-in-out;
+}
+.anim-win-flash {
+  animation: win-flash 0.8s ease-in-out 2;
+}
+.anim-bust-shake {
+  animation: bust-shake 0.4s ease-in-out 2;
+}
+.anim-neon-pulse {
+  animation: neon-pulse 2s ease-in-out infinite;
 }

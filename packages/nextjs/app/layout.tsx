@@ -6,15 +6,15 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
-  title: "Scaffold-ETH 2 App",
-  description: "Built with 🏗 Scaffold-ETH 2",
+  title: "CLAWD Blackjack — Neon Tokyo",
+  description: "Play Blackjack against The Claw. Buy chips with CLAWD or CV tokens.",
 });
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html suppressHydrationWarning className={``}>
+    <html suppressHydrationWarning lang="en" data-theme="dark">
       <body>
-        <ThemeProvider enableSystem>
+        <ThemeProvider forcedTheme="dark" defaultTheme="dark">
           <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
         </ThemeProvider>
       </body>
