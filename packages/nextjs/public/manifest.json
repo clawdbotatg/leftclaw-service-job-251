@@ -1,5 +1,5 @@
 {
-  "name": "Scaffold-ETH 2 DApp",
-  "description": "A DApp built with Scaffold-ETH",
-  "iconPath": "logo.svg"
+  "name": "CLAWD Blackjack",
+  "description": "Play Blackjack against The Claw on Base. Buy chips with CLAWD or CV tokens.",
+  "iconPath": "favicon.svg"
 }
