@@ -1,83 +1,70 @@
-# 🏗 Scaffold-ETH 2
+# CLAWD Blackjack — Neon Tokyo
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+Provably-fair on-chain Blackjack on Base. Beat The Claw. Lose to The Claw. The blockchain remembers.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+## Live App
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+Deployed on IPFS via bgipfs — see job delivery message for the canonical live link.
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+## Smart Contract
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+**BlackjackTable** — `0x3d0b667391E0A059D5dA59a28c32718E6312B8e4` on Base mainnet
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+- [View on Basescan](https://basescan.org/address/0x3d0b667391E0A059D5dA59a28c32718E6312B8e4)
+- Owner: `0xFE968dE21eb0E77d5877477C31a04A3075c0086E` (pending `acceptOwnership()`)
+- CLAWD token: `0x9f86dB9fc6f7c9408e8Fda3Ff8ce4e78ac7a6b07`
+- CV token: not yet configured (call `setCVToken(address)` as owner)
 
-## Requirements
+## How It Works
 
-Before you begin, you need to install the following tools:
+1. **Buy chips** — Send CLAWD tokens to the contract. 100 CLAWD → 10,000 chips.
+2. **Place a bet** — Choose 10K / 50K / 100K / 500K chips per hand.
+3. **Play** — Hit (DRAW), Stand (HOLD), or Double Down.
+4. **Win/Lose** — Chips are settled on-chain at the end of each hand.
+5. **The Claw** — The dealer. It never bluffs. It never tilts. It has claws.
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+## Randomness
 
-## Quickstart
+Cards are drawn using blockhash-based randomness (`block.prevrandao` seeded with per-game nonce). Appropriate for a community game; not suitable for high-stakes use. See [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) for context on PREVRANDAO security properties.
 
-To get started with Scaffold-ETH 2, follow the steps below:
+## Contract Ownership
 
-1. Install dependencies if it was skipped in CLI:
+The deployer called `transferOwnership(0xFE968dE21eb0E77d5877477C31a04A3075c0086E)`. The designated owner must call `acceptOwnership()` on the contract to complete the Ownable2Step handoff before administrative functions are accessible.
 
-```
-cd my-dapp-example
+## Tech Stack
+
+- **Scaffold-ETH 2** (Foundry flavor)
+- **Solidity 0.8.24** — Ownable2Step, Pausable, ReentrancyGuard, SafeERC20
+- **Base** (chain 8453)
+- **Next.js 15** — static export (`output: "export"`)
+- **RainbowKit + Wagmi + Viem**
+- **DaisyUI + Tailwind CSS** — Neon Tokyo theme
+- **bgipfs** — IPFS hosting
+
+## Development
+
+```bash
+# Install deps
 yarn install
-```
 
-2. Run a local network in the first terminal:
-
-```
+# Local chain + deploy
 yarn chain
-```
-
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
-
-3. On a second terminal, deploy the test contract:
-
-```
 yarn deploy
-```
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
+# Frontend dev server
 yarn start
+
+# Build static export
+cd packages/nextjs && yarn build
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+## Audit
 
-Run smart contract test with `yarn foundry:test`
+Solidity audit completed before deployment. Key findings addressed:
+- C-1: `clawdChipRate` corrected from 10,000 to 100 (100 CLAWD → 10,000 chips, not 1,000,000)
+- All CEI pattern violations resolved
+- Ownable2Step handoff pattern enforced
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
+## LeftClaw Services
 
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+Built by [LeftClaw Services](https://leftclaw.services) — Job #251.

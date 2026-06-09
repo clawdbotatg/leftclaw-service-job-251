@@ -7,7 +7,7 @@ import { parseUnits } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract, useWriteAndOpen } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 const TABLE_ADDRESS = "0x3d0b667391e0a059d5da59a28c32718e6312b8e4" as const;
@@ -64,6 +64,7 @@ const LobbyInner = () => {
 
   const { writeContractAsync: writeTable } = useScaffoldWriteContract({ contractName: "BlackjackTable" });
   const { writeContractAsync: writeClawd } = useScaffoldWriteContract({ contractName: "CLAWD" });
+  const { writeAndOpen } = useWriteAndOpen();
 
   // Parse the input amount into wei (18 decimals). Guard against bad input.
   let amountWei: bigint | undefined;
@@ -82,7 +83,7 @@ const LobbyInner = () => {
     setApprovalSubmitting(true);
     setApprovalCooldown(true);
     try {
-      await writeClawd({ functionName: "approve", args: [TABLE_ADDRESS, amountWei] });
+      await writeAndOpen(() => writeClawd({ functionName: "approve", args: [TABLE_ADDRESS, amountWei] }));
       notification.success("CLAWD approved");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -102,7 +103,7 @@ const LobbyInner = () => {
     if (!amountWei) return;
     setBuying(true);
     try {
-      await writeTable({ functionName: "buyChipsWithCLAWD", args: [amountWei] });
+      await writeAndOpen(() => writeTable({ functionName: "buyChipsWithCLAWD", args: [amountWei] }));
       notification.success("The Claw is fed. Chips acquired.");
       setAmount("");
     } catch (e: unknown) {
@@ -253,6 +254,21 @@ const LobbyInner = () => {
               <div className="text-xs text-base-content/50">chip reserve</div>
               <div className="text-xl font-bold text-purple-400">{fmtChips(clawVaultChips)}</div>
             </div>
+          </div>
+        </div>
+
+        {/* Contract info */}
+        <div className="card neon-border bg-base-200 w-full max-w-md">
+          <div className="card-body flex-row items-center justify-between py-3">
+            <span className="text-xs tracking-widest text-base-content/50">CONTRACT</span>
+            <a
+              href={`https://basescan.org/address/${TABLE_ADDRESS}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              {TABLE_ADDRESS.slice(0, 6)}…{TABLE_ADDRESS.slice(-4)}
+            </a>
           </div>
         </div>
 

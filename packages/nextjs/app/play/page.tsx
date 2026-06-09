@@ -6,7 +6,7 @@ import type { NextPage } from "next";
 import { base } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract, useWriteAndOpen } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 // Game status enum: 0 = IDLE, 1 = ACTIVE, 2 = COMPLETE
@@ -118,6 +118,7 @@ const TableInner = () => {
   });
 
   const { writeContractAsync } = useScaffoldWriteContract({ contractName: "BlackjackTable" });
+  const { writeAndOpen } = useWriteAndOpen();
 
   // games() returns [bet, status, seed, nonce, playerHasNatural, holeCardSuit]
   const status = gameData ? Number(gameData[1]) : STATUS.IDLE;
@@ -168,7 +169,7 @@ const TableInner = () => {
   const run = async (fn: "placeBet" | "hit" | "stand" | "doubleDown", args?: readonly [bigint]) => {
     setPending(true);
     try {
-      await writeContractAsync({ functionName: fn, args: args as never });
+      await writeAndOpen(() => writeContractAsync({ functionName: fn, args: args as never }));
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       if (msg.includes("rejected") || msg.includes("denied")) {
