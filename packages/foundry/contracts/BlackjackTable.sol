@@ -42,6 +42,7 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
         bytes32 seed;
         uint256 nonce;
         bool playerHasNatural; // dealt blackjack on the initial 2 cards
+        uint8 holeCardSuit;    // suit of dealer's face-down card, revealed on stand/resolve
     }
 
     // ---------------------------------------------------------------------
@@ -55,7 +56,8 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
     IERC20 public cvToken;
 
     /// @notice Chips minted per whole CLAWD token (normalized for 18 decimals).
-    uint256 public clawdChipRate = 10_000;
+    /// 100 CLAWD → 10,000 chips: chips = (clawdAmount * 100) / 1e18
+    uint256 public clawdChipRate = 100;
 
     /// @notice Chips minted per whole CV token (normalized for 18 decimals).
     uint256 public cvChipRate = 1_000;
@@ -210,7 +212,7 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
         if (playerNatural || dealerNatural) {
             game.playerHasNatural = playerNatural;
             // Reveal the hole card for transparency on immediate resolution.
-            emit CardDealt(msg.sender, game.dealerCards[1], 0, false);
+            emit CardDealt(msg.sender, game.dealerCards[1], game.holeCardSuit, true);
             game.status = GameStatus.ACTIVE; // briefly active so _resolveHand can finalize
             _resolveHand(msg.sender);
         } else {
@@ -235,8 +237,9 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
 
     /**
      * @notice Stand: reveal the dealer's hole card, run the dealer, and resolve.
+     * @dev Deliberately omits whenNotPaused so players can always resolve active hands.
      */
-    function stand() external nonReentrant whenNotPaused {
+    function stand() external nonReentrant {
         GameState storage game = games[msg.sender];
         require(game.status == GameStatus.ACTIVE, "no active game");
 
@@ -400,8 +403,9 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
         emit ChipRatesUpdated(newClawdRate, newCvRate);
     }
 
-    /// @notice Update the CV token address.
+    /// @notice Update the CV token address. Cannot change while CV reserves are nonzero.
     function setCVToken(address newCVToken) external onlyOwner {
+        require(clawVaultCV == 0, "CV reserves nonzero");
         cvToken = IERC20(newCVToken);
         emit CVTokenUpdated(newCVToken);
     }
@@ -453,11 +457,12 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
         emit CardDealt(player, card, suit, false);
     }
 
-    /// @dev Deals the dealer's hole card without emitting it (kept face down).
+    /// @dev Deals the dealer's hole card without emitting it (kept face down). Stores suit for later reveal.
     function _dealToDealerSilent(address player, uint256 index) internal {
         GameState storage game = games[player];
-        (uint8 card,) = _dealCard(game.seed, index);
+        (uint8 card, uint8 suit) = _dealCard(game.seed, index);
         game.dealerCards.push(card);
+        game.holeCardSuit = suit;
     }
 
     /// @dev Reveal-and-draw for the dealer during stand/double resolution.
@@ -466,18 +471,17 @@ contract BlackjackTable is Ownable2Step, Pausable, ReentrancyGuard {
 
         // Reveal the existing hole card (dealerCards[1]) for observers.
         if (game.dealerCards.length >= 2) {
-            emit CardDealt(player, game.dealerCards[1], 0, false);
+            emit CardDealt(player, game.dealerCards[1], game.holeCardSuit, true);
         }
 
         // Dealer draws until reaching 17 or more (hits soft 17 per spec).
-        uint256 index = _drawIndex(game);
+        // Recompute index after each draw to avoid divergence from _drawIndex.
         while (true) {
             (uint256 value, bool isSoft) = _handValueSoft(game.dealerCards);
             if (value > 17) break;
             if (value == 17 && !isSoft) break; // stand on hard 17, hit on soft 17
 
-            _dealToDealer(player, index);
-            index += 1;
+            _dealToDealer(player, _drawIndex(game));
         }
     }
 
